@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import * as todoService from '../services/todoService';
 
 interface LoginProps {
-  onLogin: (username: string, password: string) => void;
+  onLogin: (user: { username: string; role: string }) => void;
 }
 
 export const Login: React.FC<LoginProps> = ({ onLogin }) => {
@@ -9,49 +10,63 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (username && password) {
-      onLogin(username, password);
-    } else {
-      setError('Please fill in all fields');
+    setError('');
+    
+    try {
+      const user = await todoService.authenticateUser(username, password);
+      if (user) {
+        onLogin(user);
+      } else {
+        setError('Invalid credentials');
+      }
+    } catch (err) {
+      setError('An error occurred during login');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black">
-      <div className="bg-gray-900 p-8 rounded-lg shadow-md w-96 border border-gray-800">
-        <h2 className="text-2xl font-bold text-center text-white mb-6">Login</h2>
-        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="card max-w-md w-full mx-auto">
+        <h2 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
+          Progress Track
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-300">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-2">
               Username
             </label>
             <input
-              type="text"
               id="username"
+              type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+              className="input-modern"
+              placeholder="Enter your username"
+              required
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-300">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
               Password
             </label>
             <input
-              type="password"
               id="password"
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500"
+              className="input-modern"
+              placeholder="Enter your password"
+              required
             />
           </div>
-          <button
-            type="submit"
-            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-          >
+          {error && (
+            <div className="text-red-500 text-sm text-center bg-red-500/10 py-2 rounded-lg">
+              {error}
+            </div>
+          )}
+          <button type="submit" className="btn-primary w-full">
             Login
           </button>
         </form>
