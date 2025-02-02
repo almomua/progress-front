@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-black text-white min-h-screen;
+  }
+  
+  button {
+    @apply bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors;
+  }
+  
+  input, textarea {
+    @apply bg-gray-800 text-white border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.dashboard {
+  @apply p-6 max-w-4xl mx-auto;
+}
+
+.todo-item {
+  @apply bg-gray-900 p-4 rounded-lg mb-4 border border-gray-800;
+}
+
+.header {
+  @apply bg-gray-900 p-4 border-b border-gray-800;
+}
