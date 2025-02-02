@@ -1,17 +1,36 @@
-@import "tailwindcss";
+body {
+  background-color: black;
+  color: white;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
 
-@layer base {
-  body {
-    @apply bg-black text-white min-h-screen;
-  }
-  
-  button {
-    @apply bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors;
-  }
-  
-  input, textarea {
-    @apply bg-gray-800 text-white border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500;
-  }
+button {
+  background-color: #dc2626;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #b91c1c;
+}
+
+input, textarea {
+  background-color: #1f2937;
+  color: white;
+  border: 1px solid #374151;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.75rem;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.5);
 }
 
 @keyframes fadeIn {
@@ -25,18 +44,26 @@
   }
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.5s ease-out forwards;
+.fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
 }
 
 .dashboard {
-  @apply p-6 max-w-4xl mx-auto;
+  padding: 1.5rem;
+  max-width: 36rem;
+  margin: 0 auto;
 }
 
 .todo-item {
-  @apply bg-gray-900 p-4 rounded-lg mb-4 border border-gray-800;
+  background-color: #1f1f1f;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #2f2f2f;
 }
 
 .header {
-  @apply bg-gray-900 p-4 border-b border-gray-800;
+  background-color: #1f1f1f;
+  padding: 1rem;
+  border-bottom: 1px solid #2f2f2f;
 }
