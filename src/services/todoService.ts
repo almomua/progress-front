@@ -81,7 +81,17 @@ export const getTodos = async (): Promise<Todo[]> => {
     if (!response.ok) {
       throw new Error('Failed to fetch todos');
     }
-    return await response.json();
+    const data = await response.json();
+    console.log('Fetched todos:', data);
+    if (!Array.isArray(data)) {
+      console.error('Invalid todos data format:', data);
+      return [];
+    }
+    // Ensure all todos have an assignedTo field
+    return data.map(todo => ({
+      ...todo,
+      assignedTo: todo.assignedTo || ''
+    }));
   } catch (error) {
     console.error('Error fetching todos:', error);
     return [];
@@ -90,37 +100,68 @@ export const getTodos = async (): Promise<Todo[]> => {
 
 export const saveTodos = async (todos: Todo[]): Promise<void> => {
   try {
-    await fetch(`${API_BASE_URL}/todos`, {
+    // Ensure all todos have an assignedTo field before saving
+    const validatedTodos = todos.map(todo => ({
+      ...todo,
+      assignedTo: todo.assignedTo || ''
+    }));
+
+    const response = await fetch(`${API_BASE_URL}/todos`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(todos),
+      body: JSON.stringify(validatedTodos),
     });
+
+    if (!response.ok) {
+      throw new Error('Failed to save todos');
+    }
+    console.log('Todos saved successfully');
   } catch (error) {
     console.error('Error saving todos:', error);
+    throw error;
   }
 };
 
 export const addTodo = async (todo: Omit<Todo, 'id'>): Promise<Todo> => {
-  const todos = await getTodos();
-  const newTodo = { ...todo, id: Date.now() };
-  todos.push(newTodo);
-  await saveTodos(todos);
-  return newTodo;
+  try {
+    const currentTodos = await getTodos();
+    const newTodo: Todo = {
+      ...todo,
+      id: Date.now(),
+      assignedTo: todo.assignedTo || '' // Ensure assignedTo is present
+    };
+    await saveTodos([...currentTodos, newTodo]);
+    return newTodo;
+  } catch (error) {
+    console.error('Error adding todo:', error);
+    throw error;
+  }
 };
 
 export const updateTodo = async (updatedTodo: Todo): Promise<void> => {
-  const todos = await getTodos();
-  const index = todos.findIndex(t => t.id === updatedTodo.id);
-  if (index !== -1) {
-    todos[index] = updatedTodo;
-    await saveTodos(todos);
+  try {
+    const currentTodos = await getTodos();
+    const newTodos = currentTodos.map(todo => 
+      todo.id === updatedTodo.id 
+        ? { ...updatedTodo, assignedTo: updatedTodo.assignedTo || '' } // Ensure assignedTo is present
+        : todo
+    );
+    await saveTodos(newTodos);
+  } catch (error) {
+    console.error('Error updating todo:', error);
+    throw error;
   }
 };
 
 export const removeTodo = async (todoId: number): Promise<void> => {
-  const todos = await getTodos();
-  const filteredTodos = todos.filter(todo => todo.id !== todoId);
-  await saveTodos(filteredTodos);
+  try {
+    const currentTodos = await getTodos();
+    const newTodos = currentTodos.filter(todo => todo.id !== todoId);
+    await saveTodos(newTodos);
+  } catch (error) {
+    console.error('Error removing todo:', error);
+    throw error;
+  }
 };

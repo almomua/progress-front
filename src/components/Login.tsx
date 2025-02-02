@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import * as todoService from '../services/todoService';
+import type { UserRole } from '../types';
 
 interface LoginProps {
-  onLogin: (user: { username: string; role: string }) => void;
+  onLogin: (user: { username: string; role: UserRole }) => void;
 }
 
 export const Login: React.FC<LoginProps> = ({ onLogin }) => {
@@ -26,17 +27,16 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
     }
     
     try {
-      console.log('Submitting with credentials:', { username: trimmedUsername });
       const user = await todoService.authenticateUser(trimmedUsername, trimmedPassword);
       
-      if (user) {
+      if (user && user.username && user.role) {
         onLogin(user);
       } else {
-        setError('Invalid credentials. Try username: shoge, password: 123');
+        setError('Invalid credentials');
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError('An error occurred during login. Try username: shoge, password: 123');
+      setError('An error occurred during login');
     } finally {
       setIsLoading(false);
     }
@@ -59,7 +59,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="input-modern relative z-50"
-              placeholder="Enter your username (try: shoge)"
+              placeholder="Enter your username"
               required
               minLength={1}
               disabled={isLoading}
@@ -75,7 +75,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="input-modern relative z-50"
-              placeholder="Enter your password (try: 123)"
+              placeholder="Enter your password"
               required
               minLength={1}
               disabled={isLoading}

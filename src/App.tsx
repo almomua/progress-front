@@ -7,12 +7,10 @@ import { Todo, UserRole } from './types';
 import * as todoService from './services/todoService';
 import './App.css';
 import './index.css';
-import './styles/LoadingSpinner.css';
-import './styles/animations.css';
 
 const App = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [user, setUser] = useState<{ username: string; role: UserRole }>({ username: '', role: null });
+  const [user, setUser] = useState<{ username: string; role: UserRole } | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Initialize the service and load todos
@@ -21,9 +19,11 @@ const App = () => {
       try {
         todoService.initializeTodoService();
         const savedTodos = await todoService.getTodos();
-        setTodos(savedTodos);
+        console.log('Loaded todos:', savedTodos);
+        setTodos(Array.isArray(savedTodos) ? savedTodos : []);
       } catch (error) {
         console.error('Error loading todos:', error);
+        setTodos([]);
       } finally {
         setLoading(false);
       }
@@ -31,89 +31,80 @@ const App = () => {
     loadTodos();
   }, []);
 
-  // Save todos whenever they change
-  useEffect(() => {
-    const saveTodosToServer = async () => {
-      if (todos.length > 0) {
-        try {
-          await todoService.saveTodos(todos);
-        } catch (error) {
-          console.error('Error saving todos:', error);
-        }
+  const handleLogin = async (authenticatedUser: { username: string; role: UserRole }) => {
+    if (authenticatedUser && authenticatedUser.username && authenticatedUser.role) {
+      setUser(authenticatedUser);
+      // Reload todos after login
+      try {
+        const savedTodos = await todoService.getTodos();
+        console.log('Reloaded todos after login:', savedTodos);
+        setTodos(Array.isArray(savedTodos) ? savedTodos : []);
+      } catch (error) {
+        console.error('Error loading todos after login:', error);
       }
-    };
-    saveTodosToServer();
-  }, [todos]);
-
-  const handleLogin = async (username: string, password: string) => {
-    try {
-      const authenticatedUser = await todoService.authenticateUser(username, password);
-      if (authenticatedUser) {
-        setUser({ username, role: authenticatedUser.role });
-      } else {
-        alert('Invalid credentials');
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      alert('An error occurred during login');
     }
   };
 
   const handleLogout = () => {
-    setUser({ username: '', role: null });
+    setUser(null);
+    setTodos([]);
   };
 
-  const addTodo = async (task: string, firstReward: string, secondReward: string, expiryDate: string) => {
+  const handleAddTodo = async (task: string, firstReward: string, secondReward: string, expiryDate: string, assignedTo: string) => {
+    if (!user) return;
+    
     try {
       const newTodo = await todoService.addTodo({
         task,
-        completed: false,
         rewards: {
           first: firstReward,
           second: secondReward
         },
-        selectedReward: '',
-        expiryDate
+        expiryDate,
+        completed: false,
+        assignedTo
       });
-      setTodos([...todos, newTodo]);
+      
+      console.log('Added new todo:', newTodo);
+      setTodos(prevTodos => [...prevTodos, newTodo]);
     } catch (error) {
       console.error('Error adding todo:', error);
     }
   };
 
-  const removeTodo = async (todoId: number) => {
+  const handleRemoveTodo = async (id: number) => {
     try {
-      await todoService.removeTodo(todoId);
-      setTodos(todos.filter(todo => todo.id !== todoId));
+      await todoService.removeTodo(id);
+      setTodos(prevTodos => prevTodos.filter(todo => todo.id !== id));
     } catch (error) {
       console.error('Error removing todo:', error);
     }
   };
 
-  const toggleTodo = async (id: number) => {
+  const handleToggleTodo = async (id: number) => {
     try {
-      const updatedTodos = todos.map(todo =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      );
-      const updatedTodo = updatedTodos.find(todo => todo.id === id);
-      if (updatedTodo) {
+      const todoToUpdate = todos.find(todo => todo.id === id);
+      if (todoToUpdate) {
+        const updatedTodo = { ...todoToUpdate, completed: !todoToUpdate.completed };
         await todoService.updateTodo(updatedTodo);
-        setTodos(updatedTodos);
+        setTodos(prevTodos =>
+          prevTodos.map(todo => (todo.id === id ? updatedTodo : todo))
+        );
       }
     } catch (error) {
       console.error('Error toggling todo:', error);
     }
   };
 
-  const selectReward = async (id: number, reward: string) => {
+  const handleSelectReward = async (id: number, reward: string) => {
     try {
-      const updatedTodos = todos.map(todo =>
-        todo.id === id ? { ...todo, selectedReward: reward } : todo
-      );
-      const updatedTodo = updatedTodos.find(todo => todo.id === id);
-      if (updatedTodo) {
+      const todoToUpdate = todos.find(todo => todo.id === id);
+      if (todoToUpdate) {
+        const updatedTodo = { ...todoToUpdate, selectedReward: reward };
         await todoService.updateTodo(updatedTodo);
-        setTodos(updatedTodos);
+        setTodos(prevTodos =>
+          prevTodos.map(todo => (todo.id === id ? updatedTodo : todo))
+        );
       }
     } catch (error) {
       console.error('Error selecting reward:', error);
@@ -124,27 +115,36 @@ const App = () => {
     return <LoadingSpinner />;
   }
 
-  if (!user.role) {
+  if (!user) {
     return <Login onLogin={handleLogin} />;
   }
 
-  if (user.role === 'admin') {
-    return (
-      <AdminDashboard
-        todos={todos}
-        onAddTodo={addTodo}
-        onRemoveTodo={removeTodo}
-        onLogout={handleLogout}
-      />
-    );
-  }
+  // Filter todos for the current user
+  const userTodos = user.role === 'admin' 
+    ? todos 
+    : todos.filter(todo => {
+        console.log('Filtering todo:', todo, 'user:', user.username);
+        return todo.assignedTo === user.username;
+      });
 
-  return (
-    <UserDashboard
+  console.log('Filtered todos for user:', user.username, userTodos);
+  console.log('All todos:', todos);
+
+  return user.role === 'admin' ? (
+    <AdminDashboard
       todos={todos}
-      onToggleTodo={toggleTodo}
-      onSelectReward={selectReward}
+      onAddTodo={handleAddTodo}
+      onRemoveTodo={handleRemoveTodo}
       onLogout={handleLogout}
+      username={user.username}
+    />
+  ) : (
+    <UserDashboard
+      todos={userTodos}
+      onToggleTodo={handleToggleTodo}
+      onSelectReward={handleSelectReward}
+      onLogout={handleLogout}
+      username={user.username}
     />
   );
 };
