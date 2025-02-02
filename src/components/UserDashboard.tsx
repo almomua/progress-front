@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Todo } from '../types';
 import '../styles/animations.css';
+import avatar from '../assets/avatar.png'; // Import the avatar image
 
 interface UserDashboardProps {
   todos: Todo[];
@@ -233,9 +234,18 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
 
       <div className="max-w-2xl mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Task Progress</h1>
-            <p className="text-gray-400">Welcome, {username}</p>
+          <div className="flex items-center space-x-4">
+            <div className="w-16 h-16 relative flex-shrink-0">
+              <img 
+                src={avatar} 
+                alt="User Avatar" 
+                className="absolute inset-0 w-full h-full object-cover rounded-full border-2 border-purple-500"
+              />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-white">Task Progress</h1>
+              <p className="text-gray-400">Welcome, {username}</p>
+            </div>
           </div>
           <button 
             onClick={onLogout}
