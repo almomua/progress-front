@@ -30,13 +30,15 @@ export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 // User operations
 export const authenticateUser = async (username: string, password: string): Promise<User | null> => {
-  try {
-    if (!username || !password) {
-      console.error('Username and password are required');
-      return null;
-    }
+  if (!username?.trim() || !password?.trim()) {
+    console.error('Username and password are required');
+    return null;
+  }
 
-    console.log('Attempting authentication with:', { username });
+  const trimmedUsername = username.trim();
+  const trimmedPassword = password.trim();
+
+  try {
     const response = await fetch(`${API_BASE_URL}/auth`, {
       method: 'POST',
       headers: {
@@ -44,20 +46,24 @@ export const authenticateUser = async (username: string, password: string): Prom
         'Accept': 'application/json',
       },
       body: JSON.stringify({ 
-        username: username.trim(), 
-        password: password.trim() 
+        username: trimmedUsername, 
+        password: trimmedPassword 
       }),
     });
     
-    console.log('Auth response status:', response.status);
     const data = await response.json();
-    console.log('Auth response data:', data);
+    console.log('Auth response:', { status: response.status, data });
     
     if (!response.ok) {
       console.error('Auth failed:', data.error);
       return null;
     }
     
+    if (!data.username || !data.role) {
+      console.error('Invalid response format:', data);
+      return null;
+    }
+
     return {
       username: data.username,
       role: data.role

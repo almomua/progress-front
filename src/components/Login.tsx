@@ -9,21 +9,26 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     const trimmedUsername = username.trim();
     const trimmedPassword = password.trim();
     
     if (!trimmedUsername || !trimmedPassword) {
-      setError('Username and password are required');
+      setError('Please enter both username and password');
+      setIsLoading(false);
       return;
     }
     
     try {
+      console.log('Submitting with credentials:', { username: trimmedUsername });
       const user = await todoService.authenticateUser(trimmedUsername, trimmedPassword);
+      
       if (user) {
         onLogin(user);
       } else {
@@ -32,6 +37,8 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
     } catch (err) {
       console.error('Login error:', err);
       setError('An error occurred during login. Try username: shoge, password: 123');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -55,6 +62,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
               placeholder="Enter your username (try: shoge)"
               required
               minLength={1}
+              disabled={isLoading}
             />
           </div>
           <div>
@@ -70,6 +78,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
               placeholder="Enter your password (try: 123)"
               required
               minLength={1}
+              disabled={isLoading}
             />
           </div>
           {error && (
@@ -77,8 +86,19 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
               {error}
             </div>
           )}
-          <button type="submit" className="btn-primary w-full relative z-50">
-            Login
+          <button 
+            type="submit" 
+            className="btn-primary w-full relative z-50 flex items-center justify-center"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <div className="loading-spinner w-5 h-5">
+                <div></div>
+                <div></div>
+              </div>
+            ) : (
+              'Login'
+            )}
           </button>
         </form>
       </div>
