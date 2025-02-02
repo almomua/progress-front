@@ -50,7 +50,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
           <button 
             onClick={onLogout}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+            className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 hover:from-purple-700 hover:via-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-lg transition-all duration-200"
           >
             Logout
           </button>
@@ -137,7 +137,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 hover:from-purple-700 hover:via-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-lg transition-all duration-200"
               >
                 Add Task
               </button>
@@ -176,7 +176,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                   <button
                     onClick={() => onRemoveTodo(todo.id)}
-                    className="ml-4 text-red-500 hover:text-red-600"
+                    className="ml-4 text-gray-400 hover:text-red-400 transition-colors duration-200"
                   >
                     Delete
                   </button>

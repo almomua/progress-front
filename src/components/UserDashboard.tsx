@@ -224,126 +224,130 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
   console.log('UserDashboard props:', { todos, username });
 
   return (
-    <div className="min-h-screen bg-gray-900 py-6 fixed inset-0 overflow-y-auto">
-      {/* Add floating bubbles */}
-      <div className="bubble"></div>
-      <div className="bubble"></div>
-      <div className="bubble"></div>
-      <div className="bubble"></div>
-      <div className="bubble"></div>
+    <div className="fixed inset-0 overflow-hidden bg-gray-900">
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Add floating bubbles */}
+        <div className="bubble"></div>
+        <div className="bubble"></div>
+        <div className="bubble"></div>
+        <div className="bubble"></div>
+        <div className="bubble"></div>
+      </div>
 
-      <div className="max-w-2xl mx-auto px-4">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 relative flex-shrink-0">
-              <img 
-                src={avatar} 
-                alt="User Avatar" 
-                className="absolute inset-0 w-full h-full object-cover rounded-full border-2 border-purple-500"
-              />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-white">Task Progress</h1>
-              <p className="text-gray-400">Welcome, {username}</p>
-            </div>
-          </div>
-          <button 
-            onClick={onLogout}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
-          >
-            Logout
-          </button>
-        </div>
-
-        <div className="bg-gray-700 rounded-lg shadow-lg p-6">
-          <div className="space-y-4 max-h-[calc(100vh-12rem)] overflow-y-auto">
-            {Array.isArray(todos) && todos.length > 0 ? (
-              todos.map(todo => {
-                const { progress } = calculateProgress(todo.expiryDate);
-                const timeRemaining = calculateTimeRemaining(todo.expiryDate);
-                const isExpired = new Date(todo.expiryDate) <= currentTime;
-                
-                return (
-                  <div
-                    key={todo.id}
-                    className={`bg-gray-800 rounded-lg p-4 relative overflow-hidden transition-all duration-300 card-hover
-                      ${todo.completed ? 'opacity-75' : 'hover:bg-gray-750'}
-                      ${isExpired && !todo.completed ? 'border-2 border-red-500' : ''}`}
-                  >
-                    {!todo.completed && (
-                      <canvas
-                        ref={(canvas) => initCanvas(todo.id, canvas)}
-                        className="absolute inset-0 cursor-crosshair"
-                        width={800}
-                        height={200}
-                        onMouseDown={(e) => handleDrawStart(todo.id, e)}
-                        onMouseMove={(e) => handleDrawMove(todo.id, e)}
-                        onMouseUp={() => handleDrawEnd(todo.id)}
-                        onMouseLeave={() => handleDrawEnd(todo.id)}
-                      />
-                    )}
-                    
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-4">
-                        <span className={`text-white ${todo.completed ? 'line-through text-gray-400' : ''}`}>
-                          {todo.task}
-                        </span>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <span className={`text-sm ${isExpired ? 'text-red-500 font-bold' : 'text-gray-300'}`}>
-                          {timeRemaining}
-                        </span>
-                        <span className="text-xs text-gray-400">
-                          Due: {new Date(todo.expiryDate).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="w-full bg-gray-900 rounded-full h-2.5 mb-4">
-                      <div
-                        className={`h-full rounded-full ${getProgressColor(progress)}`}
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-
-                    {todo.completed && !todo.selectedReward && (
-                      <div className="space-y-2 animate-fadeIn">
-                        <div className="flex items-center justify-center space-x-2 text-green-400 mb-4">
-                          <span className="text-xl">🎉</span>
-                          <p className="text-lg font-medium">Great job! Choose your reward:</p>
-                          <span className="text-xl">🎉</span>
-                        </div>
-                        <div className="flex space-x-4 justify-center">
-                          <button
-                            onClick={() => onSelectReward(todo.id, todo.rewards.first)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transform hover:scale-105 transition-all duration-200"
-                          >
-                            {todo.rewards.first}
-                          </button>
-                          <button
-                            onClick={() => onSelectReward(todo.id, todo.rewards.second)}
-                            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transform hover:scale-105 transition-all duration-200"
-                          >
-                            {todo.rewards.second}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {todo.completed && todo.selectedReward && (
-                      <div className="text-center text-green-400 mt-2">
-                        <p>🎁 Reward chosen: {todo.selectedReward}</p>
-                      </div>
-                    )}
-                  </div>
-                );
-              })
-            ) : (
-              <div className="text-center text-gray-400 py-8">
-                <p className="text-lg">No tasks assigned yet</p>
-                <p className="text-sm mt-2">Check back later for new tasks</p>
+      <div className="relative h-full overflow-y-auto py-6">
+        <div className="max-w-2xl mx-auto px-4">
+          <div className="flex justify-between items-center mb-8 sticky top-0 bg-gray-900/80 backdrop-blur-sm py-4 z-10">
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-16 relative flex-shrink-0">
+                <img 
+                  src={avatar} 
+                  alt="User Avatar" 
+                  className="absolute inset-0 w-full h-full object-cover rounded-full border-2 border-purple-500"
+                />
               </div>
-            )}
+              <div>
+                <h1 className="text-3xl font-bold text-white">Task Progress</h1>
+                <p className="text-gray-400">Welcome, {username}</p>
+              </div>
+            </div>
+            <button 
+              onClick={onLogout}
+              className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 hover:from-purple-700 hover:via-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-lg transition-all duration-200"
+            >
+              Logout
+            </button>
+          </div>
+
+          <div className="bg-gray-700 rounded-lg shadow-lg p-6">
+            <div className="space-y-4 max-h-[calc(100vh-12rem)] overflow-y-auto">
+              {Array.isArray(todos) && todos.length > 0 ? (
+                todos.map(todo => {
+                  const { progress } = calculateProgress(todo.expiryDate);
+                  const timeRemaining = calculateTimeRemaining(todo.expiryDate);
+                  const isExpired = new Date(todo.expiryDate) <= currentTime;
+                  
+                  return (
+                    <div
+                      key={todo.id}
+                      className={`bg-gray-800 rounded-lg p-4 relative overflow-hidden transition-all duration-300 card-hover
+                        ${todo.completed ? 'opacity-75' : 'hover:bg-gray-750'}
+                        ${isExpired && !todo.completed ? 'border-2 border-red-500' : ''}`}
+                    >
+                      {!todo.completed && (
+                        <canvas
+                          ref={(canvas) => initCanvas(todo.id, canvas)}
+                          className="absolute inset-0 cursor-crosshair"
+                          width={800}
+                          height={200}
+                          onMouseDown={(e) => handleDrawStart(todo.id, e)}
+                          onMouseMove={(e) => handleDrawMove(todo.id, e)}
+                          onMouseUp={() => handleDrawEnd(todo.id)}
+                          onMouseLeave={() => handleDrawEnd(todo.id)}
+                        />
+                      )}
+                      
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-4">
+                          <span className={`text-white ${todo.completed ? 'line-through text-gray-400' : ''}`}>
+                            {todo.task}
+                          </span>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <span className={`text-sm ${isExpired ? 'text-red-500 font-bold' : 'text-gray-300'}`}>
+                            {timeRemaining}
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            Due: {new Date(todo.expiryDate).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="w-full bg-gray-900 rounded-full h-2.5 mb-4">
+                        <div
+                          className={`h-full rounded-full ${getProgressColor(progress)}`}
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+
+                      {todo.completed && !todo.selectedReward && (
+                        <div className="space-y-2 animate-fadeIn">
+                          <div className="flex items-center justify-center space-x-2 text-green-400 mb-4">
+                            <span className="text-xl">🎉</span>
+                            <p className="text-lg font-medium">Great job! Choose your reward:</p>
+                            <span className="text-xl">🎉</span>
+                          </div>
+                          <div className="flex space-x-4 justify-center">
+                            <button
+                              onClick={() => onSelectReward(todo.id, todo.rewards.first)}
+                              className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg transform hover:scale-105 transition-all duration-200"
+                            >
+                              {todo.rewards.first}
+                            </button>
+                            <button
+                              onClick={() => onSelectReward(todo.id, todo.rewards.second)}
+                              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg transform hover:scale-105 transition-all duration-200"
+                            >
+                              {todo.rewards.second}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {todo.completed && todo.selectedReward && (
+                        <div className="text-center text-green-400 mt-2">
+                          <p>🎁 Reward chosen: {todo.selectedReward}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center text-gray-400 py-8">
+                  <p className="text-lg">No tasks assigned yet</p>
+                  <p className="text-sm mt-2">Check back later for new tasks</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
