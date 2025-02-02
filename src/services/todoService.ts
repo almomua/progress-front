@@ -31,13 +31,22 @@ export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 // User operations
 export const authenticateUser = async (username: string, password: string): Promise<User | null> => {
   try {
+    if (!username || !password) {
+      console.error('Username and password are required');
+      return null;
+    }
+
     console.log('Attempting authentication with:', { username });
     const response = await fetch(`${API_BASE_URL}/auth`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ 
+        username: username.trim(), 
+        password: password.trim() 
+      }),
     });
     
     console.log('Auth response status:', response.status);

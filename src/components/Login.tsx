@@ -13,9 +13,17 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    const trimmedUsername = username.trim();
+    const trimmedPassword = password.trim();
+    
+    if (!trimmedUsername || !trimmedPassword) {
+      setError('Username and password are required');
+      return;
+    }
     
     try {
-      const user = await todoService.authenticateUser(username, password);
+      const user = await todoService.authenticateUser(trimmedUsername, trimmedPassword);
       if (user) {
         onLogin(user);
       } else {
@@ -46,6 +54,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
               className="input-modern relative z-50"
               placeholder="Enter your username (try: shoge)"
               required
+              minLength={1}
             />
           </div>
           <div>
@@ -60,6 +69,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
               className="input-modern relative z-50"
               placeholder="Enter your password (try: 123)"
               required
+              minLength={1}
             />
           </div>
           {error && (
