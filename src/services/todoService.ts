@@ -32,6 +32,7 @@ export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 // User operations
 export const authenticateUser = async (username: string, password: string): Promise<User | null> => {
   try {
+    console.log('Attempting authentication with:', { username, password });
     const response = await fetch(`${API_BASE_URL}/auth`, {
       method: 'POST',
       headers: {
@@ -40,11 +41,16 @@ export const authenticateUser = async (username: string, password: string): Prom
       body: JSON.stringify({ username, password }),
     });
     
+    console.log('Auth response status:', response.status);
+    const data = await response.json();
+    console.log('Auth response data:', data);
+    
     if (!response.ok) {
+      console.error('Auth failed:', data.error);
       return null;
     }
     
-    return await response.json();
+    return data;
   } catch (error) {
     console.error('Authentication error:', error);
     return null;

@@ -19,16 +19,17 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
       if (user) {
         onLogin(user);
       } else {
-        setError('Invalid credentials');
+        setError('Invalid credentials. Try username: shoge, password: 123');
       }
     } catch (err) {
-      setError('An error occurred during login');
+      console.error('Login error:', err);
+      setError('An error occurred during login. Try username: shoge, password: 123');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="card max-w-md w-full mx-auto">
+    <div className="min-h-screen flex items-center justify-center px-4 relative z-50">
+      <div className="card max-w-md w-full mx-auto relative">
         <h2 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
           Progress Track
         </h2>
@@ -42,8 +43,8 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="input-modern"
-              placeholder="Enter your username"
+              className="input-modern relative z-50"
+              placeholder="Enter your username (try: shoge)"
               required
             />
           </div>
@@ -56,17 +57,17 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="input-modern"
-              placeholder="Enter your password"
+              className="input-modern relative z-50"
+              placeholder="Enter your password (try: 123)"
               required
             />
           </div>
           {error && (
-            <div className="text-red-500 text-sm text-center bg-red-500/10 py-2 rounded-lg">
+            <div className="text-red-500 text-sm text-center bg-red-500/10 py-2 px-4 rounded-lg">
               {error}
             </div>
           )}
-          <button type="submit" className="btn-primary w-full">
+          <button type="submit" className="btn-primary w-full relative z-50">
             Login
           </button>
         </form>
