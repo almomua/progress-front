@@ -1,6 +1,5 @@
 import { Todo } from '../types';
 
-const TODOS_KEY = 'todos';
 const USERS_KEY = 'users';
 
 export interface User {
@@ -26,7 +25,7 @@ export const initializeTodoService = () => {
 };
 
 // Use relative paths for API endpoints when deploying to Vercel
-export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+export const API_BASE_URL = 'http://localhost:5000/api';
 
 // User operations
 export const authenticateUser = async (username: string, password: string): Promise<User | null> => {
@@ -39,7 +38,7 @@ export const authenticateUser = async (username: string, password: string): Prom
   const trimmedPassword = password.trim();
 
   try {
-    const response = await fetch(`${API_BASE_URL}/auth`, {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -75,93 +74,86 @@ export const authenticateUser = async (username: string, password: string): Prom
 };
 
 // Todo operations
+export const saveTodo = async (todo: Omit<Todo, '_id' | 'id'>): Promise<Todo> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/todos`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        task: todo.task,
+        rewards: {
+          first: todo.rewards.first,
+          second: todo.rewards.second
+        },
+        expiryDate: todo.expiryDate,
+        assignedTo: todo.assignedTo,
+        completed: false
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Failed to save todo: ${JSON.stringify(errorData)}`);
+    }
+
+    const savedTodo = await response.json();
+    // Ensure the response has both _id and id fields for compatibility
+    savedTodo.id = savedTodo._id;
+    console.log('Todo saved successfully:', savedTodo);
+    return savedTodo;
+  } catch (error) {
+    console.error('Error saving todo:', error);
+    throw error;
+  }
+};
+
 export const getTodos = async (): Promise<Todo[]> => {
   try {
     const response = await fetch(`${API_BASE_URL}/todos`);
     if (!response.ok) {
       throw new Error('Failed to fetch todos');
     }
-    const data = await response.json();
-    console.log('Fetched todos:', data);
-    if (!Array.isArray(data)) {
-      console.error('Invalid todos data format:', data);
-      return [];
-    }
-    // Ensure all todos have an assignedTo field
-    return data.map(todo => ({
-      ...todo,
-      assignedTo: todo.assignedTo || ''
-    }));
+    const todos = await response.json();
+    // Ensure each todo has both _id and id fields for compatibility
+    return todos.map((todo: Todo) => ({ ...todo, id: todo._id }));
   } catch (error) {
     console.error('Error fetching todos:', error);
-    return [];
+    throw error;
   }
 };
 
-export const saveTodos = async (todos: Todo[]): Promise<void> => {
+export const updateTodo = async (todoId: string, updates: Partial<Todo>): Promise<void> => {
   try {
-    // Ensure all todos have an assignedTo field before saving
-    const validatedTodos = todos.map(todo => ({
-      ...todo,
-      assignedTo: todo.assignedTo || ''
-    }));
-
-    const response = await fetch(`${API_BASE_URL}/todos`, {
-      method: 'POST',
+    const response = await fetch(`${API_BASE_URL}/todos/${todoId}`, {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(validatedTodos),
+      body: JSON.stringify(updates),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to save todos');
+      throw new Error('Failed to update todo');
     }
-    console.log('Todos saved successfully');
-  } catch (error) {
-    console.error('Error saving todos:', error);
-    throw error;
-  }
-};
-
-export const addTodo = async (todo: Omit<Todo, 'id'>): Promise<Todo> => {
-  try {
-    const currentTodos = await getTodos();
-    const newTodo: Todo = {
-      ...todo,
-      id: Date.now(),
-      assignedTo: todo.assignedTo || '' // Ensure assignedTo is present
-    };
-    await saveTodos([...currentTodos, newTodo]);
-    return newTodo;
-  } catch (error) {
-    console.error('Error adding todo:', error);
-    throw error;
-  }
-};
-
-export const updateTodo = async (updatedTodo: Todo): Promise<void> => {
-  try {
-    const currentTodos = await getTodos();
-    const newTodos = currentTodos.map(todo => 
-      todo.id === updatedTodo.id 
-        ? { ...updatedTodo, assignedTo: updatedTodo.assignedTo || '' } // Ensure assignedTo is present
-        : todo
-    );
-    await saveTodos(newTodos);
   } catch (error) {
     console.error('Error updating todo:', error);
     throw error;
   }
 };
 
-export const removeTodo = async (todoId: number): Promise<void> => {
+export const deleteTodo = async (todoId: string): Promise<void> => {
   try {
-    const currentTodos = await getTodos();
-    const newTodos = currentTodos.filter(todo => todo.id !== todoId);
-    await saveTodos(newTodos);
+    const response = await fetch(`${API_BASE_URL}/todos/${todoId}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to delete todo');
+    }
   } catch (error) {
-    console.error('Error removing todo:', error);
+    console.error('Error deleting todo:', error);
     throw error;
   }
 };

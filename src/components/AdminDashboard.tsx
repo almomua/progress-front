@@ -3,8 +3,8 @@ import { Todo } from '../types';
 
 interface AdminDashboardProps {
   todos: Todo[];
-  onAddTodo: (task: string, firstReward: string, secondReward: string, expiryDate: string, assignedTo: string) => void;
-  onRemoveTodo: (id: number) => void;
+  onAddTodo: (todo: Omit<Todo, '_id' | 'id'>) => void;
+  onRemoveTodo: (id: string) => void;
   onLogout: () => void;
   username: string;
 }
@@ -25,7 +25,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (newTask.trim() && firstReward.trim() && secondReward.trim() && expiryDate && assignedTo.trim()) {
-      onAddTodo(newTask.trim(), firstReward.trim(), secondReward.trim(), expiryDate, assignedTo.trim());
+      onAddTodo({
+        task: newTask.trim(),
+        rewards: {
+          first: firstReward.trim(),
+          second: secondReward.trim()
+        },
+        expiryDate,
+        assignedTo: assignedTo.trim(),
+        completed: false
+      });
       setNewTask('');
       setFirstReward('');
       setSecondReward('');

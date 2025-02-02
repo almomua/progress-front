@@ -1,5 +1,6 @@
 export interface Todo {
-  id: number;
+  _id?: string;
+  id?: string;  // Keep for backward compatibility
   task: string;
   completed: boolean;
   rewards: {

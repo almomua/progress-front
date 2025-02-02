@@ -50,45 +50,32 @@ const App = () => {
     setTodos([]);
   };
 
-  const handleAddTodo = async (task: string, firstReward: string, secondReward: string, expiryDate: string, assignedTo: string) => {
-    if (!user) return;
-    
+  const handleAddTodo = async (newTodo: Omit<Todo, '_id' | 'id'>) => {
     try {
-      const newTodo = await todoService.addTodo({
-        task,
-        rewards: {
-          first: firstReward,
-          second: secondReward
-        },
-        expiryDate,
-        completed: false,
-        assignedTo
-      });
-      
-      console.log('Added new todo:', newTodo);
-      setTodos(prevTodos => [...prevTodos, newTodo]);
+      const savedTodo = await todoService.saveTodo(newTodo);
+      setTodos(prevTodos => [...prevTodos, savedTodo]);
     } catch (error) {
       console.error('Error adding todo:', error);
     }
   };
 
-  const handleRemoveTodo = async (id: number) => {
+  const handleRemoveTodo = async (id: string) => {
     try {
-      await todoService.removeTodo(id);
-      setTodos(prevTodos => prevTodos.filter(todo => todo.id !== id));
+      await todoService.deleteTodo(id);
+      setTodos(prevTodos => prevTodos.filter(todo => (todo._id || todo.id) !== id));
     } catch (error) {
       console.error('Error removing todo:', error);
     }
   };
 
-  const handleToggleTodo = async (id: number) => {
+  const handleToggleTodo = async (id: string) => {
     try {
-      const todoToUpdate = todos.find(todo => todo.id === id);
+      const todoToUpdate = todos.find(todo => (todo._id || todo.id) === id);
       if (todoToUpdate) {
-        const updatedTodo = { ...todoToUpdate, completed: !todoToUpdate.completed };
-        await todoService.updateTodo(updatedTodo);
+        const updates = { completed: !todoToUpdate.completed };
+        await todoService.updateTodo(id, updates);
         setTodos(prevTodos =>
-          prevTodos.map(todo => (todo.id === id ? updatedTodo : todo))
+          prevTodos.map(todo => ((todo._id || todo.id) === id ? { ...todo, ...updates } : todo))
         );
       }
     } catch (error) {
@@ -96,14 +83,14 @@ const App = () => {
     }
   };
 
-  const handleSelectReward = async (id: number, reward: string) => {
+  const handleSelectReward = async (id: string, reward: string) => {
     try {
-      const todoToUpdate = todos.find(todo => todo.id === id);
+      const todoToUpdate = todos.find(todo => (todo._id || todo.id) === id);
       if (todoToUpdate) {
-        const updatedTodo = { ...todoToUpdate, selectedReward: reward };
-        await todoService.updateTodo(updatedTodo);
+        const updates = { selectedReward: reward };
+        await todoService.updateTodo(id, updates);
         setTodos(prevTodos =>
-          prevTodos.map(todo => (todo.id === id ? updatedTodo : todo))
+          prevTodos.map(todo => ((todo._id || todo.id) === id ? { ...todo, ...updates } : todo))
         );
       }
     } catch (error) {

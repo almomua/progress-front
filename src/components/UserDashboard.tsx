@@ -5,8 +5,8 @@ import avatar from '../assets/avatar.png'; // Import the avatar image
 
 interface UserDashboardProps {
   todos: Todo[];
-  onToggleTodo: (id: number) => void;
-  onSelectReward: (id: number, reward: string) => void;
+  onToggleTodo: (id: string) => void;
+  onSelectReward: (id: string, reward: string) => void;
   onLogout: () => void;
   username: string;
 }
@@ -106,8 +106,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
   onLogout,
   username
 }) => {
-  const [scratchStates, setScratchStates] = useState<Record<number, ScratchState>>({});
-  const canvasRefs = useRef<Record<number, HTMLCanvasElement>>({});
+  const [scratchStates, setScratchStates] = useState<Record<string, ScratchState>>({});
+  const canvasRefs = useRef<Record<string, HTMLCanvasElement>>({});
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // Update time every second
@@ -119,7 +119,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
     return () => clearInterval(timer);
   }, []);
 
-  const initCanvas = (todoId: number, canvas: HTMLCanvasElement | null) => {
+  const initCanvas = (todoId: string, canvas: HTMLCanvasElement | null) => {
     if (canvas) {
       canvasRefs.current[todoId] = canvas;
       const ctx = canvas.getContext('2d');
@@ -137,7 +137,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
     }
   };
 
-  const handleDrawStart = (todoId: number, e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleDrawStart = (todoId: string, e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRefs.current[todoId];
     if (!canvas) return;
 
@@ -161,7 +161,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
     }));
   };
 
-  const handleDrawMove = (todoId: number, e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleDrawMove = (todoId: string, e: React.MouseEvent<HTMLCanvasElement>) => {
     const state = scratchStates[todoId];
     if (!state?.isDrawing || !state.currentStroke) return;
 
@@ -199,7 +199,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
     }
   };
 
-  const handleDrawEnd = (todoId: number) => {
+  const handleDrawEnd = (todoId: string) => {
     const state = scratchStates[todoId];
     if (!state?.currentStroke) return;
 
@@ -212,7 +212,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
       };
 
       // Check if we have 3 or more strokes
-      if (newState.strokes.length >= 3 && !todos.find(t => t.id === todoId)?.completed) {
+      if (newState.strokes.length >= 3 && !todos.find(t => (t._id || t.id) === todoId)?.completed) {
         onToggleTodo(todoId);
       }
 
@@ -220,8 +220,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
     });
   };
 
-  console.log('UserDashboard rendering with todos:', todos);
-  console.log('UserDashboard props:', { todos, username });
+  // console.log('UserDashboard rendering with todos:', todos);
+  // console.log('UserDashboard props:', { todos, username });
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-gray-900">
