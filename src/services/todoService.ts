@@ -5,7 +5,6 @@ const USERS_KEY = 'users';
 
 export interface User {
   username: string;
-  password: string;
   role: 'admin' | 'user';
 }
 
@@ -14,8 +13,8 @@ const initializeUsers = () => {
   const existingUsers = localStorage.getItem(USERS_KEY);
   if (!existingUsers) {
     const defaultUsers: User[] = [
-      { username: 'shoge', password: '123', role: 'admin' },
-      { username: 'mariam', password: '123', role: 'user' }
+      { username: 'shoge', role: 'admin' },
+      { username: 'mariam', role: 'user' }
     ];
     localStorage.setItem(USERS_KEY, JSON.stringify(defaultUsers));
   }
@@ -32,7 +31,7 @@ export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 // User operations
 export const authenticateUser = async (username: string, password: string): Promise<User | null> => {
   try {
-    console.log('Attempting authentication with:', { username, password });
+    console.log('Attempting authentication with:', { username });
     const response = await fetch(`${API_BASE_URL}/auth`, {
       method: 'POST',
       headers: {
@@ -50,7 +49,10 @@ export const authenticateUser = async (username: string, password: string): Prom
       return null;
     }
     
-    return data;
+    return {
+      username: data.username,
+      role: data.role
+    };
   } catch (error) {
     console.error('Authentication error:', error);
     return null;
