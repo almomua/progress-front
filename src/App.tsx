@@ -5,7 +5,10 @@ import { UserDashboard } from './components/UserDashboard';
 import LoadingSpinner from './components/LoadingSpinner';
 import { Todo, UserRole } from './types';
 import * as todoService from './services/todoService';
+import './App.css';
+import './index.css';
 import './styles/LoadingSpinner.css';
+import './styles/animations.css';
 
 const App = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
