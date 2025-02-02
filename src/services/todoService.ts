@@ -26,7 +26,8 @@ export const initializeTodoService = () => {
   initializeUsers();
 };
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+// Use relative paths for API endpoints when deploying to Vercel
+export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 // User operations
 export const authenticateUser = async (username: string, password: string): Promise<User | null> => {
