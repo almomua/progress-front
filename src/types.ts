@@ -10,6 +10,7 @@ export interface Todo {
   selectedReward?: string;
   expiryDate: string;
   assignedTo: string;
+  username: string;
 }
 
 export type UserRole = 'admin' | 'user' | null;

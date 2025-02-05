@@ -33,7 +33,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         },
         expiryDate,
         assignedTo: assignedTo.trim(),
-        completed: false
+        completed: false,
+        username: username
       });
       setNewTask('');
       setFirstReward('');
