@@ -12,10 +12,15 @@ const connectDB = async () => {
   }
 
   try {
-    await mongoose.connect(MONGODB_URI);
-    console.log('Connected to MongoDB Atlas');
+    const opts = {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    };
+    console.log('Attempting to connect to MongoDB...');
+    await mongoose.connect(MONGODB_URI, opts);
+    console.log('Successfully connected to MongoDB');
   } catch (error) {
-    console.error('Could not connect to MongoDB Atlas:', error);
+    console.error('MongoDB connection error:', error);
     throw error;
   }
 };
@@ -24,8 +29,11 @@ const connectDB = async () => {
 const initializeDefaultUsers = async () => {
   try {
     const count = await User.countDocuments();
+    console.log('Current user count:', count);
+    
     if (count === 0) {
-      await User.create([
+      console.log('No users found, creating default users...');
+      const defaultUsers = [
         {
           username: 'admin',
           password: 'admin123',
@@ -36,21 +44,37 @@ const initializeDefaultUsers = async () => {
           password: 'shoge123',
           role: 'user'
         }
-      ]);
-      console.log('Default users created');
+      ];
+
+      for (const user of defaultUsers) {
+        await User.create(user);
+        console.log('Created user:', user.username);
+      }
+      console.log('Default users created successfully');
+    } else {
+      console.log('Users already exist, skipping initialization');
     }
   } catch (error) {
     console.error('Error creating default users:', error);
+    throw error;
   }
 };
 
 // CORS middleware
 const corsMiddleware = cors({
   origin: '*',
+  methods: ['POST'],
   credentials: true,
+  optionsSuccessStatus: 200
 });
 
 export default async function handler(req, res) {
+  console.log('Received request:', {
+    method: req.method,
+    headers: req.headers,
+    body: req.body
+  });
+
   // Handle CORS
   await new Promise((resolve, reject) => {
     corsMiddleware(req, res, (result) => {
@@ -63,39 +87,73 @@ export default async function handler(req, res) {
 
   // Only allow POST method
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: { message: 'Method not allowed' } });
+    return res.status(405).json({ 
+      error: { 
+        message: 'Method not allowed',
+        method: req.method
+      } 
+    });
   }
 
   try {
-    console.log('Connecting to MongoDB...');
+    // Connect to MongoDB
     await connectDB();
-    
-    console.log('Initializing default users...');
-    await initializeDefaultUsers();
+    console.log('MongoDB connection successful');
 
-    const { username, password } = req.body;
+    // Initialize default users
+    await initializeDefaultUsers();
+    console.log('User initialization complete');
+
+    // Parse request body
+    let body;
+    try {
+      body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    } catch (e) {
+      console.error('Error parsing request body:', e);
+      return res.status(400).json({ 
+        error: { 
+          message: 'Invalid request body',
+          details: e.message
+        } 
+      });
+    }
+
+    const { username, password } = body;
     console.log('Login attempt for user:', username);
     
     if (!username || !password) {
-      return res.status(400).json({ error: { message: 'Username and password are required' } });
+      return res.status(400).json({ 
+        error: { 
+          message: 'Username and password are required',
+          received: { username: !!username, password: !!password }
+        } 
+      });
     }
     
     const user = await User.findOne({ username, password });
-    console.log('User found:', user ? 'yes' : 'no');
+    console.log('User lookup result:', user ? 'found' : 'not found');
     
     if (user) {
       // Don't send password in response
       const { password: _, ...userWithoutPassword } = user.toObject();
+      console.log('Login successful for user:', username);
       return res.status(200).json(userWithoutPassword);
     } else {
-      return res.status(401).json({ error: { message: 'Invalid credentials' } });
+      console.log('Invalid credentials for user:', username);
+      return res.status(401).json({ 
+        error: { 
+          message: 'Invalid credentials',
+          username
+        } 
+      });
     }
   } catch (error) {
     console.error('Login error:', error);
     return res.status(500).json({ 
       error: { 
         message: 'Internal server error',
-        details: error.message 
+        details: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       } 
     });
   }
