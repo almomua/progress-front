@@ -160,38 +160,41 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <h2 className="text-xl font-semibold mb-4 text-white">All Tasks</h2>
           <div className="space-y-4 max-h-[calc(100vh-36rem)] overflow-y-auto">
             {Array.isArray(todos) && todos.length > 0 ? (
-              todos.map(todo => (
-                <div
-                  key={todo.id}
-                  className={`bg-gray-700 rounded-lg p-4 flex items-center justify-between
-                    ${todo.completed ? 'opacity-75' : ''}`}
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className={`text-white ${todo.completed ? 'line-through' : ''}`}>
-                        {todo.task}
-                      </span>
-                      <span className="text-sm text-gray-400">
-                        Assigned to: {todo.assignedTo}
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-400">
-                      Due: {new Date(todo.expiryDate).toLocaleString()}
-                    </div>
-                    {todo.completed && todo.selectedReward && (
-                      <div className="text-sm text-green-400 mt-1">
-                        Reward chosen: {todo.selectedReward}
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => onRemoveTodo(todo.id)}
-                    className="ml-4 text-gray-400 hover:text-red-400 transition-colors duration-200"
+              todos.map(todo => {
+                const todoId = todo._id || todo.id; // Handle both _id and id
+                return (
+                  <div
+                    key={todoId}
+                    className={`bg-gray-700 rounded-lg p-4 flex items-center justify-between
+                      ${todo.completed ? 'opacity-75' : ''}`}
                   >
-                    Delete
-                  </button>
-                </div>
-              ))
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`text-white ${todo.completed ? 'line-through' : ''}`}>
+                          {todo.task}
+                        </span>
+                        <span className="text-sm text-gray-400">
+                          Assigned to: {todo.assignedTo}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-400">
+                        Due: {new Date(todo.expiryDate).toLocaleString()}
+                      </div>
+                      {todo.completed && todo.selectedReward && (
+                        <div className="text-sm text-green-400 mt-1">
+                          Reward chosen: {todo.selectedReward}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => onRemoveTodo(todoId)}
+                      className="ml-4 text-gray-400 hover:text-red-400 transition-colors duration-200"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                );
+              })
             ) : (
               <div className="text-center text-gray-400 py-8">
                 <p className="text-lg">No tasks created yet</p>

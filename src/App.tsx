@@ -62,7 +62,7 @@ const App = () => {
   const handleRemoveTodo = async (id: string) => {
     try {
       await todoService.deleteTodo(id);
-      setTodos(prevTodos => prevTodos.filter(todo => (todo._id || todo.id) !== id));
+      setTodos(prevTodos => prevTodos.filter(todo => todo._id !== id));
     } catch (error) {
       console.error('Error removing todo:', error);
     }
@@ -70,12 +70,12 @@ const App = () => {
 
   const handleToggleTodo = async (id: string) => {
     try {
-      const todoToUpdate = todos.find(todo => (todo._id || todo.id) === id);
+      const todoToUpdate = todos.find(todo => todo._id === id);
       if (todoToUpdate) {
         const updates = { completed: !todoToUpdate.completed };
         await todoService.updateTodo(id, updates);
         setTodos(prevTodos =>
-          prevTodos.map(todo => ((todo._id || todo.id) === id ? { ...todo, ...updates } : todo))
+          prevTodos.map(todo => (todo._id === id ? { ...todo, ...updates } : todo))
         );
       }
     } catch (error) {
@@ -85,12 +85,12 @@ const App = () => {
 
   const handleSelectReward = async (id: string, reward: string) => {
     try {
-      const todoToUpdate = todos.find(todo => (todo._id || todo.id) === id);
+      const todoToUpdate = todos.find(todo => todo._id === id);
       if (todoToUpdate) {
         const updates = { selectedReward: reward };
         await todoService.updateTodo(id, updates);
         setTodos(prevTodos =>
-          prevTodos.map(todo => ((todo._id || todo.id) === id ? { ...todo, ...updates } : todo))
+          prevTodos.map(todo => (todo._id === id ? { ...todo, ...updates } : todo))
         );
       }
     } catch (error) {

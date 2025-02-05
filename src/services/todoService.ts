@@ -162,7 +162,7 @@ export const getTodos = async (): Promise<Todo[]> => {
 
 export const updateTodo = async (todoId: string, updates: Partial<Todo>): Promise<void> => {
   try {
-    const url = `${API_BASE_URL}/todos/${todoId}`;
+    const url = `${API_BASE_URL}/todos?id=${todoId}`;
     console.log('Attempting to update todo with:', {
       url,
       updates
@@ -185,7 +185,7 @@ export const updateTodo = async (todoId: string, updates: Partial<Todo>): Promis
 
 export const deleteTodo = async (todoId: string): Promise<void> => {
   try {
-    const url = `${API_BASE_URL}/todos/${todoId}`;
+    const url = `${API_BASE_URL}/todos?id=${todoId}`;
     console.log('Attempting to delete todo with:', {
       url
     });

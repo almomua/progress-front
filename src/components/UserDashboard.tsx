@@ -212,7 +212,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
       };
 
       // Check if we have 3 or more strokes
-      if (newState.strokes.length >= 3 && !todos.find(t => (t._id || t.id) === todoId)?.completed) {
+      if (newState.strokes.length >= 3 && !todos.find(t => t._id === todoId)?.completed) {
         onToggleTodo(todoId);
       }
 
@@ -265,24 +265,25 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
                   const { progress } = calculateProgress(todo.expiryDate);
                   const timeRemaining = calculateTimeRemaining(todo.expiryDate);
                   const isExpired = new Date(todo.expiryDate) <= currentTime;
+                  const todoId = todo._id; 
                   
                   return (
                     <div
-                      key={todo.id}
+                      key={todoId}
                       className={`bg-gray-800 rounded-lg p-4 relative overflow-hidden transition-all duration-300 card-hover
                         ${todo.completed ? 'opacity-75' : 'hover:bg-gray-750'}
                         ${isExpired && !todo.completed ? 'border-2 border-red-500' : ''}`}
                     >
                       {!todo.completed && (
                         <canvas
-                          ref={(canvas) => initCanvas(todo.id, canvas)}
+                          ref={(canvas) => initCanvas(todoId, canvas)}
                           className="absolute inset-0 cursor-crosshair"
                           width={800}
                           height={200}
-                          onMouseDown={(e) => handleDrawStart(todo.id, e)}
-                          onMouseMove={(e) => handleDrawMove(todo.id, e)}
-                          onMouseUp={() => handleDrawEnd(todo.id)}
-                          onMouseLeave={() => handleDrawEnd(todo.id)}
+                          onMouseDown={(e) => handleDrawStart(todoId, e)}
+                          onMouseMove={(e) => handleDrawMove(todoId, e)}
+                          onMouseUp={() => handleDrawEnd(todoId)}
+                          onMouseLeave={() => handleDrawEnd(todoId)}
                         />
                       )}
                       
@@ -318,13 +319,13 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({
                           </div>
                           <div className="flex space-x-4 justify-center">
                             <button
-                              onClick={() => onSelectReward(todo.id, todo.rewards.first)}
+                              onClick={() => onSelectReward(todoId, todo.rewards.first)}
                               className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-2 rounded-lg transform hover:scale-105 transition-all duration-200"
                             >
                               {todo.rewards.first}
                             </button>
                             <button
-                              onClick={() => onSelectReward(todo.id, todo.rewards.second)}
+                              onClick={() => onSelectReward(todoId, todo.rewards.second)}
                               className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg transform hover:scale-105 transition-all duration-200"
                             >
                               {todo.rewards.second}

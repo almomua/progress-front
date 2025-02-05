@@ -14,7 +14,8 @@ export default async function handler(req, res) {
   console.log('Received request:', {
     method: req.method,
     headers: req.headers,
-    body: req.body
+    body: req.body,
+    query: req.query
   });
 
   // Handle CORS
@@ -95,7 +96,7 @@ export default async function handler(req, res) {
         return res.status(200).json(updatedTodo);
 
       case 'DELETE':
-        const { id: deleteId } = req.query;
+        const deleteId = req.query.id;
         if (!deleteId) {
           return res.status(400).json({
             error: {
