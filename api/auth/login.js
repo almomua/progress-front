@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import User from '../../backend/models/User.js';
+import User from '../models/User.js';
 import cors from 'cors';
 
 // Helper to connect to MongoDB
@@ -17,6 +17,30 @@ const connectDB = async () => {
   } catch (error) {
     console.error('Could not connect to MongoDB Atlas:', error);
     throw error;
+  }
+};
+
+// Initialize default users if none exist
+const initializeDefaultUsers = async () => {
+  try {
+    const count = await User.countDocuments();
+    if (count === 0) {
+      await User.create([
+        {
+          username: 'admin',
+          password: 'admin123',
+          role: 'admin'
+        },
+        {
+          username: 'shoge',
+          password: 'shoge123',
+          role: 'user'
+        }
+      ]);
+      console.log('Default users created');
+    }
+  } catch (error) {
+    console.error('Error creating default users:', error);
   }
 };
 
@@ -43,16 +67,21 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Connect to database
+    console.log('Connecting to MongoDB...');
     await connectDB();
+    
+    console.log('Initializing default users...');
+    await initializeDefaultUsers();
 
     const { username, password } = req.body;
+    console.log('Login attempt for user:', username);
     
     if (!username || !password) {
       return res.status(400).json({ error: { message: 'Username and password are required' } });
     }
     
     const user = await User.findOne({ username, password });
+    console.log('User found:', user ? 'yes' : 'no');
     
     if (user) {
       // Don't send password in response
@@ -63,6 +92,11 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).json({ error: { message: error.message || 'Internal server error' } });
+    return res.status(500).json({ 
+      error: { 
+        message: 'Internal server error',
+        details: error.message 
+      } 
+    });
   }
 }
