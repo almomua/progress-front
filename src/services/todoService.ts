@@ -37,9 +37,10 @@ const handleResponse = async (response: Response) => {
       console.error('API Error:', {
         status: response.status,
         statusText: response.statusText,
-        data
+        data,
+        url: response.url
       });
-      throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      throw new Error(data.error?.message || `HTTP error! status: ${response.status}`);
     }
     return data;
   }
@@ -57,13 +58,15 @@ export const authenticateUser = async (username: string, password: string): Prom
   const trimmedPassword = password.trim();
 
   try {
+    const url = `${API_BASE_URL}/auth/login`;
     console.log('Attempting to authenticate with:', {
-      url: `${API_BASE_URL}/auth/login`,
+      url,
       username: trimmedUsername,
-      isProd: import.meta.env.PROD
+      isProd: import.meta.env.PROD,
+      baseUrl: API_BASE_URL
     });
 
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -88,12 +91,13 @@ export const authenticateUser = async (username: string, password: string): Prom
 // Todo operations
 export const saveTodo = async (todo: Omit<Todo, '_id' | 'id'>): Promise<Todo> => {
   try {
+    const url = `${API_BASE_URL}/todos`;
     console.log('Attempting to save todo with:', {
-      url: `${API_BASE_URL}/todos`,
+      url,
       todo
     });
 
-    const response = await fetch(`${API_BASE_URL}/todos`, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -123,11 +127,12 @@ export const saveTodo = async (todo: Omit<Todo, '_id' | 'id'>): Promise<Todo> =>
 
 export const getTodos = async (): Promise<Todo[]> => {
   try {
+    const url = `${API_BASE_URL}/todos`;
     console.log('Attempting to fetch todos from:', {
-      url: `${API_BASE_URL}/todos`
+      url
     });
 
-    const response = await fetch(`${API_BASE_URL}/todos`);
+    const response = await fetch(url);
     const todos = await handleResponse(response);
     // Ensure each todo has both _id and id fields for compatibility
     return todos.map((todo: Todo) => ({ ...todo, id: todo._id }));
@@ -139,12 +144,13 @@ export const getTodos = async (): Promise<Todo[]> => {
 
 export const updateTodo = async (todoId: string, updates: Partial<Todo>): Promise<void> => {
   try {
+    const url = `${API_BASE_URL}/todos/${todoId}`;
     console.log('Attempting to update todo with:', {
-      url: `${API_BASE_URL}/todos/${todoId}`,
+      url,
       updates
     });
 
-    const response = await fetch(`${API_BASE_URL}/todos/${todoId}`, {
+    const response = await fetch(url, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -161,11 +167,12 @@ export const updateTodo = async (todoId: string, updates: Partial<Todo>): Promis
 
 export const deleteTodo = async (todoId: string): Promise<void> => {
   try {
+    const url = `${API_BASE_URL}/todos/${todoId}`;
     console.log('Attempting to delete todo with:', {
-      url: `${API_BASE_URL}/todos/${todoId}`
+      url
     });
 
-    const response = await fetch(`${API_BASE_URL}/todos/${todoId}`, {
+    const response = await fetch(url, {
       method: 'DELETE',
     });
 

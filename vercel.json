@@ -19,6 +19,10 @@
       "dest": "/backend/server.js"
     },
     {
+      "src": "/auth/(.*)",
+      "dest": "/backend/server.js"
+    },
+    {
       "handle": "filesystem"
     },
     {
