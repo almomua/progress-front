@@ -25,7 +25,9 @@ export const initializeTodoService = () => {
 };
 
 // Use relative paths for API endpoints when deploying to Vercel
-export const API_BASE_URL = 'http://localhost:5000/api';
+export const API_BASE_URL = import.meta.env.PROD 
+  ? '/api'  // In production, use relative path
+  : 'http://localhost:5000/api'; // In development, use proxy path
 
 // User operations
 export const authenticateUser = async (username: string, password: string): Promise<User | null> => {
