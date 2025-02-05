@@ -40,6 +40,7 @@ export const authenticateUser = async (username: string, password: string): Prom
   const trimmedPassword = password.trim();
 
   try {
+    console.log('Attempting to authenticate with:', API_BASE_URL);
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
@@ -50,25 +51,18 @@ export const authenticateUser = async (username: string, password: string): Prom
         username: trimmedUsername, 
         password: trimmedPassword 
       }),
+      credentials: 'include'
     });
-    
-    const data = await response.json();
-    console.log('Auth response:', { status: response.status, data });
-    
+
     if (!response.ok) {
-      console.error('Auth failed:', data.error);
-      return null;
-    }
-    
-    if (!data.username || !data.role) {
-      console.error('Invalid response format:', data);
-      return null;
+      const errorData = await response.json().catch(() => ({ message: 'Unknown error occurred' }));
+      console.error('Auth failed:', errorData);
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
 
-    return {
-      username: data.username,
-      role: data.role
-    };
+    const data = await response.json();
+    console.log('Auth successful:', data);
+    return data;
   } catch (error) {
     console.error('Authentication error:', error);
     return null;
@@ -96,8 +90,9 @@ export const saveTodo = async (todo: Omit<Todo, '_id' | 'id'>): Promise<Todo> =>
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Failed to save todo: ${JSON.stringify(errorData)}`);
+      const errorData = await response.json().catch(() => ({ message: 'Unknown error occurred' }));
+      console.error('Failed to save todo:', errorData);
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
 
     const savedTodo = await response.json();
@@ -115,7 +110,9 @@ export const getTodos = async (): Promise<Todo[]> => {
   try {
     const response = await fetch(`${API_BASE_URL}/todos`);
     if (!response.ok) {
-      throw new Error('Failed to fetch todos');
+      const errorData = await response.json().catch(() => ({ message: 'Unknown error occurred' }));
+      console.error('Failed to fetch todos:', errorData);
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
     const todos = await response.json();
     // Ensure each todo has both _id and id fields for compatibility
@@ -137,7 +134,9 @@ export const updateTodo = async (todoId: string, updates: Partial<Todo>): Promis
     });
 
     if (!response.ok) {
-      throw new Error('Failed to update todo');
+      const errorData = await response.json().catch(() => ({ message: 'Unknown error occurred' }));
+      console.error('Failed to update todo:', errorData);
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
   } catch (error) {
     console.error('Error updating todo:', error);
@@ -152,7 +151,9 @@ export const deleteTodo = async (todoId: string): Promise<void> => {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to delete todo');
+      const errorData = await response.json().catch(() => ({ message: 'Unknown error occurred' }));
+      console.error('Failed to delete todo:', errorData);
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
   } catch (error) {
     console.error('Error deleting todo:', error);
