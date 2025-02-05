@@ -1,18 +1,37 @@
 import mongoose from 'mongoose';
 
 const todoSchema = new mongoose.Schema({
-  title: {
+  task: {
     type: String,
-    required: [true, 'Title is required'],
-    trim: true
-  },
-  description: {
-    type: String,
+    required: [true, 'Task is required'],
     trim: true
   },
   completed: {
     type: Boolean,
     default: false
+  },
+  rewards: {
+    first: {
+      type: String,
+      required: [true, 'First reward is required']
+    },
+    second: {
+      type: String,
+      required: [true, 'Second reward is required']
+    }
+  },
+  selectedReward: {
+    type: String,
+    required: false
+  },
+  expiryDate: {
+    type: String,
+    required: [true, 'Expiry date is required']
+  },
+  assignedTo: {
+    type: String,
+    required: [true, 'Assigned user is required'],
+    trim: true
   },
   username: {
     type: String,

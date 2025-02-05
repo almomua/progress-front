@@ -11,11 +11,10 @@ const corsMiddleware = cors({
 });
 
 export default async function handler(req, res) {
-  console.log('Received todos request:', {
+  console.log('Received request:', {
     method: req.method,
     headers: req.headers,
-    body: req.body,
-    query: req.query
+    body: req.body
   });
 
   // Handle CORS
@@ -31,10 +30,12 @@ export default async function handler(req, res) {
   try {
     // Connect to MongoDB
     await connectToDatabase();
+    console.log('MongoDB connection successful');
 
     switch (req.method) {
       case 'GET':
-        const todos = await Todo.find().sort({ createdAt: -1 });
+        const todos = await Todo.find({});
+        console.log('Retrieved todos:', todos);
         return res.status(200).json(todos);
       
       case 'POST':
@@ -43,6 +44,7 @@ export default async function handler(req, res) {
         try {
           body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
         } catch (e) {
+          console.error('Error parsing request body:', e);
           return res.status(400).json({ 
             error: { 
               message: 'Invalid request body',
@@ -51,9 +53,11 @@ export default async function handler(req, res) {
           });
         }
 
-        // Create new todo
-        const newTodo = await Todo.create(body);
-        return res.status(201).json(newTodo);
+        console.log('Creating new todo:', body);
+        const newTodo = new Todo(body);
+        const savedTodo = await newTodo.save();
+        console.log('Created todo:', savedTodo);
+        return res.status(201).json(savedTodo);
 
       case 'PUT':
         const { id } = req.query;
@@ -65,12 +69,21 @@ export default async function handler(req, res) {
           });
         }
 
-        const updatedTodo = await Todo.findByIdAndUpdate(
-          id,
-          { $set: req.body },
-          { new: true, runValidators: true }
-        );
+        let updateBody;
+        try {
+          updateBody = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+        } catch (e) {
+          console.error('Error parsing update body:', e);
+          return res.status(400).json({
+            error: {
+              message: 'Invalid request body',
+              details: e.message
+            }
+          });
+        }
 
+        console.log('Updating todo:', { id, updates: updateBody });
+        const updatedTodo = await Todo.findByIdAndUpdate(id, updateBody, { new: true });
         if (!updatedTodo) {
           return res.status(404).json({
             error: {
@@ -78,12 +91,12 @@ export default async function handler(req, res) {
             }
           });
         }
-
+        console.log('Updated todo:', updatedTodo);
         return res.status(200).json(updatedTodo);
 
       case 'DELETE':
-        const todoId = req.query.id;
-        if (!todoId) {
+        const { id: deleteId } = req.query;
+        if (!deleteId) {
           return res.status(400).json({
             error: {
               message: 'Todo ID is required'
@@ -91,7 +104,8 @@ export default async function handler(req, res) {
           });
         }
 
-        const deletedTodo = await Todo.findByIdAndDelete(todoId);
+        console.log('Deleting todo:', deleteId);
+        const deletedTodo = await Todo.findByIdAndDelete(deleteId);
         if (!deletedTodo) {
           return res.status(404).json({
             error: {
@@ -99,7 +113,7 @@ export default async function handler(req, res) {
             }
           });
         }
-
+        console.log('Deleted todo:', deletedTodo);
         return res.status(200).json({ message: 'Todo deleted successfully' });
 
       default:
@@ -111,12 +125,11 @@ export default async function handler(req, res) {
         });
     }
   } catch (error) {
-    console.error('Todos error:', error);
+    console.error('Error handling todo request:', error);
     return res.status(500).json({ 
       error: { 
         message: 'Internal server error',
-        details: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        details: error.message
       } 
     });
   }
