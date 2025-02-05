@@ -79,12 +79,23 @@ export const authenticateUser = async (username: string, password: string): Prom
       credentials: 'include'
     });
 
-    const data = await handleResponse(response);
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: errorData,
+        url: response.url
+      });
+      throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
     console.log('Auth successful:', data);
     return data;
   } catch (error) {
     console.error('Authentication error:', error);
-    return null;
+    throw error;
   }
 };
 
