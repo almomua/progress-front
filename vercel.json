@@ -19,6 +19,10 @@
       "dest": "/api/auth/login.js"
     },
     {
+      "src": "/api/todos",
+      "dest": "/api/todos/index.js"
+    },
+    {
       "src": "/api/health",
       "dest": "/api/health.js"
     },

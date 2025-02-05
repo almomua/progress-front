@@ -1,4 +1,6 @@
 import cors from 'cors';
+import { connectToDatabase } from '../utils/mongodb.js';
+import User from '../models/User.js';
 
 // CORS middleware
 const corsMiddleware = cors({
@@ -8,17 +10,40 @@ const corsMiddleware = cors({
   optionsSuccessStatus: 200
 });
 
-// Hardcoded users for testing
-const users = [
-  {
-    username: 'shoge',
-    password: 'shoge123',
-    role: 'user',
-    _id: '1',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+// Initialize default users if none exist
+const initializeDefaultUsers = async () => {
+  try {
+    const count = await User.countDocuments();
+    console.log('Current user count:', count);
+    
+    if (count === 0) {
+      console.log('No users found, creating default users...');
+      const defaultUsers = [
+        {
+          username: 'admin',
+          password: 'admin123',
+          role: 'admin'
+        },
+        {
+          username: 'shoge',
+          password: 'shoge123',
+          role: 'user'
+        }
+      ];
+
+      for (const user of defaultUsers) {
+        await User.create(user);
+        console.log('Created user:', user.username);
+      }
+      console.log('Default users created successfully');
+    } else {
+      console.log('Users already exist, skipping initialization');
+    }
+  } catch (error) {
+    console.error('Error creating default users:', error);
+    throw error;
   }
-];
+};
 
 export default async function handler(req, res) {
   console.log('Received request:', {
@@ -48,6 +73,14 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Connect to MongoDB
+    await connectToDatabase();
+    console.log('MongoDB connection successful');
+
+    // Initialize default users
+    await initializeDefaultUsers();
+    console.log('User initialization complete');
+
     // Parse request body
     let body;
     try {
@@ -74,12 +107,12 @@ export default async function handler(req, res) {
       });
     }
     
-    const user = users.find(u => u.username === username && u.password === password);
+    const user = await User.findOne({ username, password });
     console.log('User lookup result:', user ? 'found' : 'not found');
     
     if (user) {
       // Don't send password in response
-      const { password: _, ...userWithoutPassword } = user;
+      const { password: _, ...userWithoutPassword } = user.toObject();
       console.log('Login successful for user:', username);
       return res.status(200).json(userWithoutPassword);
     } else {

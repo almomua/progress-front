@@ -103,33 +103,30 @@ export const authenticateUser = async (username: string, password: string): Prom
 export const saveTodo = async (todo: Omit<Todo, '_id' | 'id'>): Promise<Todo> => {
   try {
     const url = `${API_BASE_URL}/todos`;
-    console.log('Attempting to save todo with:', {
-      url,
-      todo
-    });
+    console.log('Attempting to save todo with:', { url, todo });
 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
-      body: JSON.stringify({
-        task: todo.task,
-        rewards: {
-          first: todo.rewards.first,
-          second: todo.rewards.second
-        },
-        expiryDate: todo.expiryDate,
-        assignedTo: todo.assignedTo,
-        completed: false
-      }),
+      body: JSON.stringify(todo)
     });
 
-    const savedTodo = await handleResponse(response);
-    // Ensure the response has both _id and id fields for compatibility
-    savedTodo.id = savedTodo._id;
-    console.log('Todo saved successfully:', savedTodo);
-    return savedTodo;
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: errorData,
+        url: response.url
+      });
+      throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
+    }
+
+    const savedTodo = await response.json();
+    return { ...savedTodo, id: savedTodo._id };
   } catch (error) {
     console.error('Error saving todo:', error);
     throw error;
@@ -139,12 +136,22 @@ export const saveTodo = async (todo: Omit<Todo, '_id' | 'id'>): Promise<Todo> =>
 export const getTodos = async (): Promise<Todo[]> => {
   try {
     const url = `${API_BASE_URL}/todos`;
-    console.log('Attempting to fetch todos from:', {
-      url
-    });
+    console.log('Attempting to fetch todos from:', { url });
 
     const response = await fetch(url);
-    const todos = await handleResponse(response);
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('API Error:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: errorData,
+        url: response.url
+      });
+      throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
+    }
+
+    const todos = await response.json();
     // Ensure each todo has both _id and id fields for compatibility
     return todos.map((todo: Todo) => ({ ...todo, id: todo._id }));
   } catch (error) {
